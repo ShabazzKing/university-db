@@ -28,12 +28,13 @@ private:
     void printRow(const printingValues& pv, const Student& s) const;
 public:
     Database();
+    Database(const std::vector<Student>& students);
     unsigned studentsCount() const;
     bool addStudent(const Student& student);
     bool removeStudent(unsigned indexNumber);
     void printDatabase() const;
-    std::vector<Student> findByLastName(const std::string& lastName) const;
-    Student findByPesel(unsigned pesel) const;
-    void sortByLastName();
-    void sortByPesel();
+    Database findByLastName(const std::string& lastName) const;
+    Database findByPesel(unsigned pesel) const;
+    Database& sortByLastName();
+    Database& sortByPesel();
 };

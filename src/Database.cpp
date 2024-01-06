@@ -6,12 +6,14 @@
 
 Database::Database() : db_() {}
 
+Database::Database(const std::vector<Student>& students) : db_(students) {}
+
 unsigned Database::studentsCount() const {
     return db_.size();
 }
 
 bool Database::addStudent(const Student& student) {
-    if (peselExists(student.getPesel())) {
+    if (peselExists(student.getPesel()) || indexNumberExists(student.getIndexNumber())) {
         return false;
     }
     db_.push_back(student);
@@ -174,34 +176,37 @@ void Database::printRow(const printingValues& pv, const Student& s) const {
     std::cout << "|\n";
 }
 
-std::vector<Student> Database::findByLastName(const std::string& lastName) const {
+Database Database::findByLastName(const std::string& lastName) const {
     std::vector<Student> result;
     std::for_each(db_.cbegin(), db_.cend(), [&result, lastName](const auto& elem) {
         if (elem.getLastName() == lastName) {
             result.push_back(elem);
         }
     });
-    return result;
+    return Database(result);
 }
 
-Student Database::findByPesel(unsigned pesel) const {
-    for (const Student& student : db_) {
-        if (student.getPesel() == pesel) {
-            return student;
+Database Database::findByPesel(unsigned pesel) const {
+    std::vector<Student> result;
+    std::for_each(db_.cbegin(), db_.cend(), [&result, pesel](const auto& elem) {
+        if (elem.getPesel() == pesel) {
+            result.push_back(elem);
         }
-    }
-    throw "Student o peselu " + std::to_string(pesel) + " nie istnieje.\n";
+    });
+    return Database(result);
 }
 
-void Database::sortByLastName() {
+Database& Database::sortByLastName() {
     std::sort(db_.begin(), db_.end(), [](const auto& elem1, const auto& elem2) {
         return elem1.getLastName() < elem2.getLastName();
     });
+    return *this;
 }
 
 
-void Database::sortByPesel() {
+Database& Database::sortByPesel() {
     std::sort(db_.begin(), db_.end(), [](const auto& elem1, const auto& elem2) {
         return elem1.getPesel() < elem2.getPesel();
     });
+    return *this;
 }
