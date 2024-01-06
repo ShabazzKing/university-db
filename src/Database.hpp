@@ -21,6 +21,7 @@ private:
         const unsigned sexSize = 11;
     };
     std::vector<Student> db_;
+    bool peselIsValid(unsigned long pesel) const;
     bool peselExists(unsigned long pesel) const;
     bool indexNumberExists(unsigned long indexNumber) const;
     void printHeader(const printingValues& pv) const;

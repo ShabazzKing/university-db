@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <numeric>
 #include <string>
 
 Database::Database() : db_() {}
@@ -13,12 +14,35 @@ unsigned Database::studentsCount() const {
 }
 
 bool Database::addStudent(const Student& student) {
-    if (peselExists(student.getPesel()) || indexNumberExists(student.getIndexNumber())) {
+    if (! peselIsValid(student.getPesel()) || peselExists(student.getPesel()) || indexNumberExists(student.getIndexNumber())) {
         return false;
     }
     db_.push_back(student);
     return true;
 }
+
+bool Database::peselIsValid(unsigned long pesel) const {
+    unsigned i = 0;
+    std::vector<unsigned> digits;
+    while (pesel != 0) {
+        digits.push_back(pesel % 10);
+        pesel -= digits[i++];
+        pesel /= 10;
+    }
+    if (i != 11) {
+        return false;
+    }
+    std::reverse(digits.begin(), digits.end());
+    std::vector<unsigned> weights{1, 3, 7, 9, 1, 3, 7, 9, 1, 3};
+    unsigned product = std::inner_product(weights.cbegin(), weights.cend(), digits.cbegin(), 0);
+    unsigned controlDigit = product % 10 == 0 ? 0 : 10 - product % 10;
+    if (controlDigit != digits[10]) {
+        return false;
+    }
+    return true;
+}
+
+
 
 bool Database::peselExists(unsigned long pesel) const {
     if (std::find_if(db_.cbegin(), db_.cend(), [pesel](const auto& elem) { return elem.getPesel() == pesel; }) != db_.cend()) {
@@ -58,11 +82,11 @@ void Database::printDatabase() const {
         if (elem.getAddress().size() > pv.addressSize) {
             pv.addressSize = elem.getAddress().size();
         }
-        if (std::to_string(elem.getIndexNumber()).size() > pv.indexNumberSize) {
-            pv.indexNumberSize = std::to_string(elem.getIndexNumber()).size();
+        if (std::to_wstring(elem.getIndexNumber()).size() > pv.indexNumberSize) {
+            pv.indexNumberSize = std::to_wstring(elem.getIndexNumber()).size();
         }
-        if (std::to_string(elem.getPesel()).size() > pv.peselSize) {
-            pv.peselSize = std::to_string(elem.getPesel()).size();
+        if (std::to_wstring(elem.getPesel()).size() > pv.peselSize) {
+            pv.peselSize = std::to_wstring(elem.getPesel()).size();
         }
     });
     pv.fNameSize = pv.fNameSize < pv.fNameCol ? pv.fNameCol : pv.fNameSize;
@@ -164,12 +188,12 @@ void Database::printRow(const printingValues& pv, const Student& s) const {
     }
     std::wcout << L"| ";
     std::wcout << s.getIndexNumber();
-    for (unsigned i = 0; i < pv.indexNumberSize - std::to_string(s.getIndexNumber()).size() - 1; i++) {
+    for (unsigned i = 0; i < pv.indexNumberSize - std::to_wstring(s.getIndexNumber()).size() - 1; i++) {
         std::wcout << L" ";
     }
     std::wcout << L"| ";
     std::wcout << s.getPesel();
-    for (unsigned i = 0; i < pv.peselSize - std::to_string(s.getPesel()).size() - 1; i++) {
+    for (unsigned i = 0; i < pv.peselSize - std::to_wstring(s.getPesel()).size() - 1; i++) {
         std::wcout << L" ";
     }
     std::wcout << L"| ";
