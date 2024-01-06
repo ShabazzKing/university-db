@@ -15,7 +15,7 @@ private:
     unsigned indexNumber_;
     unsigned pesel_;
     Sex sex_;
-    Student();
+    Student() {};
 public:
     Student(const std::string& firstName,
             const std::string& lastName,
