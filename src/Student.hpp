@@ -9,24 +9,24 @@ enum class Sex {
 
 class Student {
 private:
-    std::string firstName_;
-    std::string lastName_;
-    std::string address_;
-    unsigned indexNumber_;
-    unsigned pesel_;
+    std::wstring firstName_;
+    std::wstring lastName_;
+    std::wstring address_;
+    unsigned long indexNumber_;
+    unsigned long pesel_;
     Sex sex_;
     Student() {};
 public:
-    Student(const std::string& firstName,
-            const std::string& lastName,
-            const std::string& address,
-            unsigned indexNumber,
-            unsigned pesel,
+    Student(const std::wstring& firstName,
+            const std::wstring& lastName,
+            const std::wstring& address,
+            unsigned long indexNumber,
+            unsigned long pesel,
             Sex sex);
-    std::string getFirstName() const;
-    std::string getLastName() const;
-    std::string getAddress() const;
-    unsigned getIndexNumber() const;
-    unsigned getPesel() const;
+    std::wstring getFirstName() const;
+    std::wstring getLastName() const;
+    std::wstring getAddress() const;
+    unsigned long getIndexNumber() const;
+    unsigned long getPesel() const;
     Sex getSex() const;
 };

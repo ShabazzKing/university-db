@@ -1,10 +1,10 @@
 #include "Student.hpp"
 
-Student::Student(const std::string& firstName,
-                 const std::string& lastName,
-                 const std::string& address,
-                 unsigned indexNumber,
-                 unsigned pesel,
+Student::Student(const std::wstring& firstName,
+                 const std::wstring& lastName,
+                 const std::wstring& address,
+                 unsigned long indexNumber,
+                 unsigned long pesel,
                  Sex sex)
                 : firstName_(firstName)
                 , lastName_(lastName)
@@ -13,23 +13,23 @@ Student::Student(const std::string& firstName,
                 , pesel_(pesel)
                 , sex_(sex) {}
 
-std::string Student::getFirstName() const {
+std::wstring Student::getFirstName() const {
     return firstName_;
 }
 
-std::string Student::getLastName() const {
+std::wstring Student::getLastName() const {
     return lastName_;
 }
 
-std::string Student::getAddress() const {
+std::wstring Student::getAddress() const {
     return address_;
 }
 
-unsigned Student::getIndexNumber() const {
+unsigned long Student::getIndexNumber() const {
     return indexNumber_;
 }
 
-unsigned Student::getPesel() const {
+unsigned long Student::getPesel() const {
     return pesel_;
 }
 

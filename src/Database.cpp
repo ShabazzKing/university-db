@@ -20,14 +20,14 @@ bool Database::addStudent(const Student& student) {
     return true;
 }
 
-bool Database::peselExists(unsigned pesel) const {
+bool Database::peselExists(unsigned long pesel) const {
     if (std::find_if(db_.cbegin(), db_.cend(), [pesel](const auto& elem) { return elem.getPesel() == pesel; }) != db_.cend()) {
         return true;
     }
     return false;
 }
 
-bool Database::removeStudent(unsigned indexNumber) {
+bool Database::removeStudent(unsigned long indexNumber) {
     if (! indexNumberExists(indexNumber)) {
         return false;
     }
@@ -37,7 +37,7 @@ bool Database::removeStudent(unsigned indexNumber) {
     return true;
 }
 
-bool Database::indexNumberExists(unsigned indexNumber) const {
+bool Database::indexNumberExists(unsigned long indexNumber) const {
     if (std::find_if(db_.cbegin(), db_.cend(), [indexNumber](const auto& elem) {
         return elem.getIndexNumber() == indexNumber;
     }) != db_.cend()) {
@@ -61,15 +61,20 @@ void Database::printDatabase() const {
         if (std::to_string(elem.getIndexNumber()).size() > pv.indexNumberSize) {
             pv.indexNumberSize = std::to_string(elem.getIndexNumber()).size();
         }
+        if (std::to_string(elem.getPesel()).size() > pv.peselSize) {
+            pv.peselSize = std::to_string(elem.getPesel()).size();
+        }
     });
     pv.fNameSize = pv.fNameSize < pv.fNameCol ? pv.fNameCol : pv.fNameSize;
     pv.lNameSize = pv.lNameSize < pv.lNameCol ? pv.lNameCol : pv.lNameSize;
     pv.addressSize = pv.addressSize < pv.addressCol ? pv.addressCol : pv.addressSize;
     pv.indexNumberSize = pv.indexNumberSize < pv.indexNumberCol ? pv.indexNumberCol : pv.indexNumberSize;
+    pv.peselSize = pv.peselSize < pv.peselCol ? pv.peselCol : pv.peselSize;
     pv.fNameSize += 2;
     pv.lNameSize += 2;
     pv.addressSize += 2;
     pv.indexNumberSize += 2;
+    pv.peselSize += 2;
     printHeader(pv);
     for (const Student& student : db_) {
         printRow(pv, student);
@@ -79,104 +84,104 @@ void Database::printDatabase() const {
 
 void Database::printHeader(const printingValues& pv) const {
     printDashes(pv);
-    std::cout << "| ";
-    std::cout << "Imię";
+    std::wcout << L"| ";
+    std::wcout << L"Imię";
     for (unsigned i = 0; i < pv.fNameSize - pv.fNameCol - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << "Nazwisko";
+    std::wcout << L"| ";
+    std::wcout << L"Nazwisko";
     for (unsigned i = 0; i < pv.lNameSize - pv.lNameCol - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << "Adres";
+    std::wcout << L"| ";
+    std::wcout << L"Adres";
     for (unsigned i = 0; i < pv.addressSize - pv.addressCol - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << "Numer indeksu";
+    std::wcout << L"| ";
+    std::wcout << L"Numer indeksu";
     for (unsigned i = 0; i < pv.indexNumberSize - pv.indexNumberCol - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << "Pesel";
+    std::wcout << L"| ";
+    std::wcout << L"Pesel";
     for (unsigned i = 0; i < pv.peselSize - pv.peselCol - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << "Płeć";
+    std::wcout << L"| ";
+    std::wcout << L"Płeć";
     for (unsigned i = 0; i < pv.sexSize - pv.sexCol - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "|\n";
+    std::wcout << L"|\n";
     printDashes(pv);
 }
 
 void Database::printDashes(const printingValues& pv) const {
-    std::cout << "+";
+    std::wcout << L"+";
     for (unsigned i = 0; i < pv.fNameSize; i++) {
-        std::cout << "-";
+        std::wcout << L"-";
     }
-    std::cout << "+";
+    std::wcout << L"+";
     for (unsigned i = 0; i < pv.lNameSize; i++) {
-        std::cout << "-";
+        std::wcout << L"-";
     }
-    std::cout << "+";
+    std::wcout << L"+";
     for (unsigned i = 0; i < pv.addressSize; i++) {
-        std::cout << "-";
+        std::wcout << L"-";
     }
-    std::cout << "+";
+    std::wcout << L"+";
     for (unsigned i = 0; i < pv.indexNumberSize; i++) {
-        std::cout << "-";
+        std::wcout << L"-";
     }
-    std::cout << "+";
+    std::wcout << L"+";
     for (unsigned i = 0; i < pv.peselSize; i++) {
-        std::cout << "-";
+        std::wcout << L"-";
     }
-    std::cout << "+";
+    std::wcout << L"+";
     for (unsigned i = 0; i < pv.sexSize; i++) {
-        std::cout << "-";
+        std::wcout << L"-";
     }
-    std::cout << "+\n";
+    std::wcout << L"+\n";
 }
 
 void Database::printRow(const printingValues& pv, const Student& s) const {
-    std::cout << "| ";
-    std::cout << s.getFirstName();
+    std::wcout << L"| ";
+    std::wcout << s.getFirstName();
     for (unsigned i = 0; i < pv.fNameSize - s.getFirstName().size() - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << s.getLastName();
+    std::wcout << L"| ";
+    std::wcout << s.getLastName();
     for (unsigned i = 0; i < pv.lNameSize - s.getLastName().size() - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << s.getAddress();
+    std::wcout << L"| ";
+    std::wcout << s.getAddress();
     for (unsigned i = 0; i < pv.addressSize - s.getAddress().size() - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << s.getIndexNumber();
+    std::wcout << L"| ";
+    std::wcout << s.getIndexNumber();
     for (unsigned i = 0; i < pv.indexNumberSize - std::to_string(s.getIndexNumber()).size() - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::cout << s.getPesel();
+    std::wcout << L"| ";
+    std::wcout << s.getPesel();
     for (unsigned i = 0; i < pv.peselSize - std::to_string(s.getPesel()).size() - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "| ";
-    std::string sex = s.getSex() == Sex::Woman ? "kobieta" : "mężczyzna";
-    std::cout << sex;
+    std::wcout << L"| ";
+    std::wstring sex = s.getSex() == Sex::Woman ? L"kobieta" : L"mężczyzna";
+    std::wcout << sex;
     for (unsigned i = 0; i < pv.sexSize - sex.size() - 1; i++) {
-        std::cout << " ";
+        std::wcout << L" ";
     }
-    std::cout << "|\n";
+    std::wcout << L"|\n";
 }
 
-Database Database::findByLastName(const std::string& lastName) const {
+Database Database::findByLastName(const std::wstring& lastName) const {
     std::vector<Student> result;
     std::for_each(db_.cbegin(), db_.cend(), [&result, lastName](const auto& elem) {
         if (elem.getLastName() == lastName) {
@@ -186,7 +191,7 @@ Database Database::findByLastName(const std::string& lastName) const {
     return Database(result);
 }
 
-Database Database::findByPesel(unsigned pesel) const {
+Database Database::findByPesel(unsigned long pesel) const {
     std::vector<Student> result;
     std::for_each(db_.cbegin(), db_.cend(), [&result, pesel](const auto& elem) {
         if (elem.getPesel() == pesel) {

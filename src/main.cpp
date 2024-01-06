@@ -1,5 +1,6 @@
 #include "Database.hpp"
 
+#include <clocale>
 #include <iostream>
 #include <string>
 
@@ -9,19 +10,20 @@ void searchByLastName(const Database& database);
 void searchByPesel(const Database& database);
 
 int main() {
+    std::setlocale(LC_ALL, "pl_PL.UTF-8");
     Database database;
     while (true) {
-        std::cout << "Wybierz operację:\n";
-        std::cout << "    1 Wyświetl bazę danych\n";
-        std::cout << "    2 Dodaj studenta\n";
-        std::cout << "    3 Usuń studenta\n";
-        std::cout << "    4 Sortuj po nazwisku i wyświetl bazę danych\n";
-        std::cout << "    5 Sortuj po numerze PESEL i wyświetl bazę danych\n";
-        std::cout << "    6 Wyszukaj studentów po nazwisku i wyświetl\n";
-        std::cout << "    7 Wyszukaj studenta po numerze PESEL i wyświetl\n";
-        std::cout << "    8 Zakończ program\n";
+        std::wcout << L"Wybierz operację:\n";
+        std::wcout << L"    1 Wyświetl bazę danych\n";
+        std::wcout << L"    2 Dodaj studenta\n";
+        std::wcout << L"    3 Usuń studenta\n";
+        std::wcout << L"    4 Sortuj po nazwisku i wyświetl bazę danych\n";
+        std::wcout << L"    5 Sortuj po numerze PESEL i wyświetl bazę danych\n";
+        std::wcout << L"    6 Wyszukaj studentów po nazwisku i wyświetl\n";
+        std::wcout << L"    7 Wyszukaj studenta po numerze PESEL i wyświetl\n";
+        std::wcout << L"    8 Zakończ program\n";
         unsigned answer;
-        std::cin >> answer;
+        std::wcin >> answer;
         switch (answer) {
             case 1:
                 database.printDatabase();
@@ -47,52 +49,58 @@ int main() {
             case 8:
                 return 0;
             default:
-                std::cout << "Nieprawidłowa opcja\n";
+                std::wcout << L"Nieprawidłowa opcja\n";
         }
     }
     return 0;
 }
 
 void addStudent(Database& database) {
-    std::string name, surname, address;
-    unsigned indexNumber, pesel;
-    char sex;
-    std::cout << "Imię: ";
-    std::cin >> name;
-    std::cout << "Nazwisko: ";
-    std::cin >> surname;
-    std::cout << "Adres: ";
-    std::cin >> address;
-    std::cout << "Numer indeksu: ";
-    std::cin >> indexNumber;
-    std::cout << "PESEL: ";
-    std::cin >> pesel;
-    std::cout << "Płeć (k/m): ";
-    std::cin >> sex;
-    if (! database.addStudent(Student(name, surname, address, indexNumber, pesel, sex == 'k' ? Sex::Woman : Sex::Man))) {
-        std::cout << "Nie udało się dodać studenta.\n";
+    std::wstring name, surname, address, sex;
+    unsigned long indexNumber, pesel;
+    std::wcout << L"Imię: ";
+    std::wcin >> name;
+    std::wcout << L"Nazwisko: ";
+    std::wcin >> surname;
+    std::wcin.get();
+    std::wcout << L"Adres: ";
+    std::getline(std::wcin, address);
+    std::wcout << L"Numer indeksu: ";
+    std::wcin >> indexNumber;
+    std::wcout << L"PESEL: ";
+    std::wcin >> pesel;
+    std::wcin.get();
+    std::wcout << L"Płeć (k/m): ";
+    std::wcin >> sex;
+    if (! database.addStudent(Student(name,
+                                      surname,
+                                      address,
+                                      indexNumber,
+                                      pesel,
+                                      sex == L"k" ? Sex::Woman : Sex::Man))) {
+        std::wcout << L"Nie udało się dodać studenta.\n";
     }
 }
 
 void removeStudent(Database& database) {
-    unsigned indexNumber;
-    std::cout << "Numer indeksu: ";
-    std::cin >> indexNumber;
+    unsigned long indexNumber;
+    std::wcout << L"Numer indeksu: ";
+    std::wcin >> indexNumber;
     if (! database.removeStudent(indexNumber)) {
-        std::cout << "Nie udało się usunąć studenta.\n";
+        std::wcout << L"Nie udało się usunąć studenta.\n";
     }
 }
 
 void searchByLastName(const Database& database) {
-    std::string surname;
-    std::cout << "Nazwisko: ";
-    std::cin >> surname;
+    std::wstring surname;
+    std::wcout << L"Nazwisko: ";
+    std::wcin >> surname;
     database.findByLastName(surname).printDatabase();
 }
 
 void searchByPesel(const Database& database) {
-    unsigned pesel;
-    std::cout << "PESEL: ";
-    std::cin >> pesel;
+    unsigned long pesel;
+    std::wcout << L"PESEL: ";
+    std::wcin >> pesel;
     database.findByPesel(pesel).printDatabase();
 }
