@@ -329,3 +329,67 @@ void Database::writeFile(std::filesystem::path file) const {
     outfile << root;
     outfile.close();
 }
+
+bool Database::restoreFromFile(std::filesystem::path file) {
+    if (studentsCount() > 0) {
+        return false;
+    }
+    if (file.string()[0] != '/') {
+        std::filesystem::path leadingDot(".");
+        leadingDot /= file;
+        file = leadingDot;
+    }
+    if (! std::filesystem::exists(file)) {
+        return false;
+    }
+    bool canReadFromFile = false;
+    unsigned UID = getuid();
+    unsigned GID = getpwuid(UID)->pw_gid;
+    unsigned* supplementaryGroups = new unsigned[1];
+    unsigned numberOfSupplementaryGroups = getgroups(0, supplementaryGroups);
+    delete [] supplementaryGroups;
+    supplementaryGroups = new unsigned[numberOfSupplementaryGroups];
+    getgroups(numberOfSupplementaryGroups, supplementaryGroups);
+    struct stat info;
+    if (stat(file.c_str(), &info) == -1) {
+        delete [] supplementaryGroups;
+        return false;
+    }
+    unsigned fileUID = info.st_uid;
+    unsigned fileGID = getpwuid(info.st_uid)->pw_gid;
+    bool fileGIDBelongsToUserSupplementaryGroups = false;
+    for (unsigned i = 0; i < numberOfSupplementaryGroups; i++) {
+        if (supplementaryGroups[i] == fileGID) {
+            fileGIDBelongsToUserSupplementaryGroups = true;
+            break;
+        }
+    }
+    std::filesystem::perms filePerms = std::filesystem::status(file).permissions();
+    if (UID == fileUID && (filePerms & std::filesystem::perms::owner_read) == std::filesystem::perms::owner_read) {
+        canReadFromFile = true;
+    } else if ((GID == fileGID || fileGIDBelongsToUserSupplementaryGroups)
+        && (filePerms & std::filesystem::perms::group_read) == std::filesystem::perms::group_read) {
+        canReadFromFile = true;
+    } else if ((filePerms & std::filesystem::perms::others_read) == std::filesystem::perms::others_read) {
+        canReadFromFile = true;
+    }
+    delete [] supplementaryGroups;
+    if (canReadFromFile) {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+        Json::Value root;
+        std::ifstream infile(file);
+        infile >> root;
+        infile.close();
+        for (unsigned i = 0; i < root.size(); i++) {
+            db_.push_back(Student(converter.from_bytes(root[i]["firstName"].asString()),
+                                  converter.from_bytes(root[i]["lastName"].asString()),
+                                  converter.from_bytes(root[i]["address"].asString()),
+                                  root[i]["indexNumber"].asUInt64(),
+                                  root[i]["pesel"].asUInt64(),
+                                  root[i]["sex"].asString() == "w" ? Sex::Woman : Sex::Man));
+        }
+        return true;
+    } else {
+        return false;
+    }
+}
