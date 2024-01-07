@@ -2,6 +2,7 @@
 
 #include "Student.hpp"
 
+#include <filesystem>
 #include <vector>
 
 class Database {
@@ -27,6 +28,7 @@ private:
     void printHeader(const printingValues& pv) const;
     void printDashes(const printingValues& pv) const;
     void printRow(const printingValues& pv, const Student& s) const;
+    void writeFile(std::filesystem::path file) const;
 public:
     Database();
     Database(const std::vector<Student>& students);
@@ -38,4 +40,6 @@ public:
     Database findByPesel(unsigned long pesel) const;
     Database& sortByLastName();
     Database& sortByPesel();
+    bool storeInFile(std::filesystem::path file) const;
+    bool restoreFromFile(std::filesystem::path file);
 };

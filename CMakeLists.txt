@@ -16,10 +16,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(university-db)
 # enable_testing()
 
+find_package(jsoncpp REQUIRED)
+
 add_compile_options(-Wall -Wextra -Wpedantic)
 
 add_executable(${PROJECT_NAME} src/main.cpp src/Database.cpp src/Student.cpp)
 # add_executable(${PROJECT_NAME}-ut test.cpp advancedCalculator.cpp)
+
+target_link_libraries(${PROJECT_NAME} libjsoncpp.so)
 
 # target_link_libraries(${PROJECT_NAME}-ut gtest_main)
 

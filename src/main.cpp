@@ -1,6 +1,7 @@
 #include "Database.hpp"
 
 #include <clocale>
+#include <filesystem>
 #include <iostream>
 #include <string>
 
@@ -8,6 +9,7 @@ void addStudent(Database& database);
 void removeStudent(Database& database);
 void searchByLastName(const Database& database);
 void searchByPesel(const Database& database);
+void writeToFile(const Database& database);
 
 int main() {
     std::setlocale(LC_ALL, "pl_PL.UTF-8");
@@ -21,7 +23,8 @@ int main() {
         std::wcout << L"    5 Sortuj po numerze PESEL i wyświetl bazę danych\n";
         std::wcout << L"    6 Wyszukaj studentów po nazwisku i wyświetl\n";
         std::wcout << L"    7 Wyszukaj studenta po numerze PESEL i wyświetl\n";
-        std::wcout << L"    8 Zakończ program\n";
+        std::wcout << L"    8 Zapisz bazę do pliku\n";
+        std::wcout << L"    9 Zakończ program\n";
         unsigned answer;
         std::wcin >> answer;
         switch (answer) {
@@ -47,6 +50,9 @@ int main() {
                 searchByPesel(database);
                 break;
             case 8:
+                writeToFile(database);
+                break;
+            case 9:
                 return 0;
             default:
                 std::wcout << L"Nieprawidłowa opcja\n";
@@ -103,4 +109,14 @@ void searchByPesel(const Database& database) {
     std::wcout << L"PESEL: ";
     std::wcin >> pesel;
     database.findByPesel(pesel).printDatabase();
+}
+
+void writeToFile(const Database& database) {
+    std::wcout << L"Podaj ściężkę do pliku (nazwę): ";
+    std::wstring filename;
+    std::wcin.get();
+    std::getline(std::wcin, filename);
+    if (! database.storeInFile(std::filesystem::path(filename))) {
+        std::wcout << L"Nie udało się zapisać do pliku.\n";
+    }
 }

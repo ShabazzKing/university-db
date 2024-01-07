@@ -1,9 +1,19 @@
 #include "Database.hpp"
 
 #include <algorithm>
+#include <codecvt>
+#include <fstream>
 #include <iostream>
+#include <locale>
 #include <numeric>
 #include <string>
+
+#include <jsoncpp/json/json.h>
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <sys/stat.h>
 
 Database::Database() : db_() {}
 
@@ -238,4 +248,84 @@ Database& Database::sortByPesel() {
         return elem1.getPesel() < elem2.getPesel();
     });
     return *this;
+}
+
+bool Database::storeInFile(std::filesystem::path file) const {
+    if (file.string()[0] != '/') {
+        std::filesystem::path leadingDot(".");
+        leadingDot /= file;
+        file = leadingDot;
+    }
+    if (std::filesystem::exists(file)) {
+        return false;
+    }
+    bool canWriteToDirectory = false;
+    unsigned UID = getuid();
+    unsigned GID = getpwuid(UID)->pw_gid;
+    unsigned* supplementaryGroups = new unsigned[1];
+    unsigned numberOfSupplementaryGroups = getgroups(0, supplementaryGroups);
+    delete [] supplementaryGroups;
+    supplementaryGroups = new unsigned[numberOfSupplementaryGroups];
+    getgroups(numberOfSupplementaryGroups, supplementaryGroups);
+    if (std::filesystem::exists(file.parent_path())) {
+        struct stat info;
+        if (stat(file.parent_path().c_str(), &info) == -1) {
+            delete [] supplementaryGroups;
+            return false;
+        }
+        unsigned fileUID = info.st_uid;
+        unsigned fileGID = getpwuid(info.st_uid)->pw_gid;
+        bool fileGIDBelongsToUserSupplementaryGroups = false;
+        for (unsigned i = 0; i < numberOfSupplementaryGroups; i++) {
+            if (supplementaryGroups[i] == fileGID) {
+                fileGIDBelongsToUserSupplementaryGroups = true;
+                break;
+            }
+        }
+        std::filesystem::perms filePerms = std::filesystem::status(file.parent_path()).permissions();
+        if (UID == fileUID
+            && (filePerms & (std::filesystem::perms::owner_write | std::filesystem::perms::owner_exec))
+                == (std::filesystem::perms::owner_write | std::filesystem::perms::owner_exec)) {
+            canWriteToDirectory = true;
+        } else if ((GID == fileGID || fileGIDBelongsToUserSupplementaryGroups)
+            && (filePerms & (std::filesystem::perms::group_write | std::filesystem::perms::group_exec))
+                == (std::filesystem::perms::group_write | std::filesystem::perms::group_exec)) {
+            canWriteToDirectory = true;
+        } else if ((filePerms & (std::filesystem::perms::others_write | std::filesystem::perms::others_exec))
+            == (std::filesystem::perms::others_write | std::filesystem::perms::others_exec)) {
+            canWriteToDirectory = true;
+        }
+        delete [] supplementaryGroups;
+        if (canWriteToDirectory) {
+            writeFile(file);
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        delete [] supplementaryGroups;
+        if (! std::filesystem::create_directories(file.parent_path())) {
+            return false;
+        }
+        writeFile(file);
+        return true;
+    }
+}
+
+void Database::writeFile(std::filesystem::path file) const {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+    Json::Value root;
+    std::for_each(db_.cbegin(), db_.cend(), [&root, &converter](const auto& elem) {
+        Json::Value databaseEntry;
+        databaseEntry["firstName"] = Json::Value(converter.to_bytes(elem.getFirstName()));
+        databaseEntry["lastName"] = Json::Value(converter.to_bytes(elem.getLastName()));
+        databaseEntry["address"] = Json::Value(converter.to_bytes(elem.getAddress()));
+        databaseEntry["indexNumber"] = Json::Value(elem.getIndexNumber());
+        databaseEntry["pesel"] = Json::Value(elem.getPesel());
+        databaseEntry["sex"] = Json::Value(elem.getSex() == Sex::Woman ? "w" : "m");
+        root.append(databaseEntry);
+    });
+    std::ofstream outfile(file);
+    outfile << root;
+    outfile.close();
 }
