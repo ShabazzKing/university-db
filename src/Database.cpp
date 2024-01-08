@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <locale>
+#include <memory>
 #include <numeric>
 #include <string>
 
@@ -262,15 +263,14 @@ bool Database::storeInFile(std::filesystem::path file) const {
     bool canWriteToDirectory = false;
     unsigned UID = getuid();
     unsigned GID = getpwuid(UID)->pw_gid;
-    unsigned* supplementaryGroups = new unsigned[1];
-    unsigned numberOfSupplementaryGroups = getgroups(0, supplementaryGroups);
-    delete [] supplementaryGroups;
-    supplementaryGroups = new unsigned[numberOfSupplementaryGroups];
-    getgroups(numberOfSupplementaryGroups, supplementaryGroups);
+    std::unique_ptr<unsigned[]> supplementaryGroups = std::make_unique<unsigned[]>(1);
+    unsigned numberOfSupplementaryGroups = getgroups(0, supplementaryGroups.get());
+    supplementaryGroups.reset(nullptr);
+    supplementaryGroups = std::make_unique<unsigned[]>(numberOfSupplementaryGroups);
+    getgroups(numberOfSupplementaryGroups, supplementaryGroups.get());
     if (std::filesystem::exists(file.parent_path())) {
         struct stat info;
         if (stat(file.parent_path().c_str(), &info) == -1) {
-            delete [] supplementaryGroups;
             return false;
         }
         unsigned fileUID = info.st_uid;
@@ -295,7 +295,6 @@ bool Database::storeInFile(std::filesystem::path file) const {
             == (std::filesystem::perms::others_write | std::filesystem::perms::others_exec)) {
             canWriteToDirectory = true;
         }
-        delete [] supplementaryGroups;
         if (canWriteToDirectory) {
             writeFile(file);
             return true;
@@ -303,7 +302,6 @@ bool Database::storeInFile(std::filesystem::path file) const {
             return false;
         }
     } else {
-        delete [] supplementaryGroups;
         if (! std::filesystem::create_directories(file.parent_path())) {
             return false;
         }
@@ -345,14 +343,13 @@ bool Database::restoreFromFile(std::filesystem::path file) {
     bool canReadFromFile = false;
     unsigned UID = getuid();
     unsigned GID = getpwuid(UID)->pw_gid;
-    unsigned* supplementaryGroups = new unsigned[1];
-    unsigned numberOfSupplementaryGroups = getgroups(0, supplementaryGroups);
-    delete [] supplementaryGroups;
-    supplementaryGroups = new unsigned[numberOfSupplementaryGroups];
-    getgroups(numberOfSupplementaryGroups, supplementaryGroups);
+    std::unique_ptr<unsigned[]> supplementaryGroups = std::make_unique<unsigned[]>(1);
+    unsigned numberOfSupplementaryGroups = getgroups(0, supplementaryGroups.get());
+    supplementaryGroups.reset(nullptr);
+    supplementaryGroups = std::make_unique<unsigned[]>(numberOfSupplementaryGroups);
+    getgroups(numberOfSupplementaryGroups, supplementaryGroups.get());
     struct stat info;
     if (stat(file.c_str(), &info) == -1) {
-        delete [] supplementaryGroups;
         return false;
     }
     unsigned fileUID = info.st_uid;
@@ -373,7 +370,6 @@ bool Database::restoreFromFile(std::filesystem::path file) {
     } else if ((filePerms & std::filesystem::perms::others_read) == std::filesystem::perms::others_read) {
         canReadFromFile = true;
     }
-    delete [] supplementaryGroups;
     if (canReadFromFile) {
         std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
         Json::Value root;
