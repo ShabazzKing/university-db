@@ -16,7 +16,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(university-db)
 # enable_testing()
 
-find_package(jsoncpp REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 

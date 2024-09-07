@@ -9,7 +9,7 @@
 #include <numeric>
 #include <string>
 
-#include <jsoncpp/json/json.h>
+#include <json/json.h>
 
 #include <unistd.h>
 #include <sys/types.h>
