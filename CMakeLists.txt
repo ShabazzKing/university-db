@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.11.0)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # include(FetchContent)
@@ -19,9 +19,9 @@ project(university-db)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(JSONCPP REQUIRED jsoncpp)
 
-add_compile_options(-Wall -Wextra -Wpedantic)
+add_compile_options(-Wall -Wextra -Wpedantic -Werror)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/Database.cpp src/Student.cpp)
+add_executable(${PROJECT_NAME} src/main.cpp src/Database.cpp src/Person.cpp src/Student.cpp src/Worker.cpp)
 # add_executable(${PROJECT_NAME}-ut test.cpp advancedCalculator.cpp)
 
 target_link_libraries(${PROJECT_NAME} libjsoncpp.so)

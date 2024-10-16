@@ -1,21 +1,10 @@
 #pragma once
 
-#include <string>
+#include "Person.hpp"
 
-enum class Sex {
-    Woman,
-    Man
-};
-
-class Student {
+class Student : public Person {
 private:
-    std::wstring firstName_;
-    std::wstring lastName_;
-    std::wstring address_;
     unsigned long indexNumber_;
-    unsigned long pesel_;
-    Sex sex_;
-    Student() {};
 public:
     Student(const std::wstring& firstName,
             const std::wstring& lastName,
@@ -23,10 +12,6 @@ public:
             unsigned long indexNumber,
             unsigned long pesel,
             Sex sex);
-    std::wstring getFirstName() const;
-    std::wstring getLastName() const;
-    std::wstring getAddress() const;
-    unsigned long getIndexNumber() const;
-    unsigned long getPesel() const;
-    Sex getSex() const;
+    std::wstring getIndexNumber() const override;
+    std::wstring getEarnings() const override;
 };

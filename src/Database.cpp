@@ -5,7 +5,6 @@
 #include <fstream>
 #include <iostream>
 #include <locale>
-#include <memory>
 #include <numeric>
 #include <string>
 
@@ -18,9 +17,9 @@
 
 Database::Database() : db_() {}
 
-Database::Database(const std::vector<Student>& students) : db_(students) {}
+Database::Database(const std::vector<std::shared_ptr<Person>>& persons) : db_(persons) {}
 
-unsigned Database::studentsCount() const {
+unsigned Database::personsCount() const {
     return db_.size();
 }
 
@@ -28,17 +27,26 @@ bool Database::addStudent(const Student& student) {
     if (! peselIsValid(student.getPesel()) || peselExists(student.getPesel()) || indexNumberExists(student.getIndexNumber())) {
         return false;
     }
-    db_.push_back(student);
+    db_.push_back(std::make_shared<Student>(student));
     return true;
 }
 
-bool Database::peselIsValid(unsigned long pesel) const {
+bool Database::addWorker(const Worker& worker) {
+    if (! peselIsValid(worker.getPesel()) || peselExists(worker.getPesel())) {
+        return false;
+    }
+    db_.push_back(std::make_shared<Worker>(worker));
+    return true;
+}
+
+bool Database::peselIsValid(const std::wstring& pesel) const {
+    unsigned long p = std::stoul(pesel);
     unsigned i = 0;
     std::vector<unsigned> digits;
-    while (pesel != 0) {
-        digits.push_back(pesel % 10);
-        pesel -= digits[i++];
-        pesel /= 10;
+    while (p != 0) {
+        digits.push_back(p % 10);
+        p -= digits[i++];
+        p /= 10;
     }
     if (i != 11) {
         return false;
@@ -53,28 +61,36 @@ bool Database::peselIsValid(unsigned long pesel) const {
     return true;
 }
 
-
-
-bool Database::peselExists(unsigned long pesel) const {
-    if (std::find_if(db_.cbegin(), db_.cend(), [pesel](const auto& elem) { return elem.getPesel() == pesel; }) != db_.cend()) {
+bool Database::peselExists(const std::wstring& pesel) const {
+    if (std::find_if(db_.cbegin(), db_.cend(), [&pesel](const auto& elem) { return elem->getPesel() == pesel; }) != db_.cend()) {
         return true;
     }
     return false;
 }
 
-bool Database::removeStudent(unsigned long indexNumber) {
-    if (! indexNumberExists(indexNumber)) {
+bool Database::removeStudentByIndexNumber(unsigned long indexNumber) {
+    if (! indexNumberExists(std::to_wstring(indexNumber))) {
         return false;
     }
-    db_.erase(std::remove_if(db_.begin(), db_.end(), [indexNumber](const auto& elem) {
-        return elem.getIndexNumber() == indexNumber;
+    db_.erase(std::remove_if(db_.begin(), db_.end(), [&indexNumber](const auto& elem) {
+        return elem->getIndexNumber() == std::to_wstring(indexNumber);
     }), db_.end());
     return true;
 }
 
-bool Database::indexNumberExists(unsigned long indexNumber) const {
-    if (std::find_if(db_.cbegin(), db_.cend(), [indexNumber](const auto& elem) {
-        return elem.getIndexNumber() == indexNumber;
+bool Database::removePersonByPesel(unsigned long pesel) {
+    if (! peselExists(std::to_wstring(pesel))) {
+        return false;
+    }
+    db_.erase(std::remove_if(db_.begin(), db_.end(), [&pesel](const auto& elem) {
+        return elem->getPesel() == std::to_wstring(pesel);
+    }), db_.end());
+    return true;
+}
+
+bool Database::indexNumberExists(const std::wstring& indexNumber) const {
+    if (std::find_if(db_.cbegin(), db_.cend(), [&indexNumber](const auto& elem) {
+        return elem->getIndexNumber() == indexNumber;
     }) != db_.cend()) {
         return true;
     }
@@ -84,35 +100,40 @@ bool Database::indexNumberExists(unsigned long indexNumber) const {
 void Database::printDatabase() const {
     printingValues pv;
     std::for_each(db_.cbegin(), db_.cend(), [&pv](const auto& elem) {
-        if (elem.getFirstName().size() > pv.fNameSize) {
-            pv.fNameSize = elem.getFirstName().size();
+        if (elem->getFirstName().size() > pv.fNameSize) {
+            pv.fNameSize = elem->getFirstName().size();
         }
-        if (elem.getLastName().size() > pv.lNameSize) {
-            pv.lNameSize = elem.getLastName().size();
+        if (elem->getLastName().size() > pv.lNameSize) {
+            pv.lNameSize = elem->getLastName().size();
         }
-        if (elem.getAddress().size() > pv.addressSize) {
-            pv.addressSize = elem.getAddress().size();
+        if (elem->getAddress().size() > pv.addressSize) {
+            pv.addressSize = elem->getAddress().size();
         }
-        if (std::to_wstring(elem.getIndexNumber()).size() > pv.indexNumberSize) {
-            pv.indexNumberSize = std::to_wstring(elem.getIndexNumber()).size();
+        if (elem->getIndexNumber().size() > pv.indexNumberSize) {
+            pv.indexNumberSize = elem->getIndexNumber().size();
         }
-        if (std::to_wstring(elem.getPesel()).size() > pv.peselSize) {
-            pv.peselSize = std::to_wstring(elem.getPesel()).size();
+        if (elem->getEarnings().size() > pv.earningsSize) {
+            pv.earningsSize = elem->getEarnings().size();
+        }
+        if (elem->getPesel().size() > pv.peselSize) {
+            pv.peselSize = elem->getPesel().size();
         }
     });
     pv.fNameSize = pv.fNameSize < pv.fNameCol ? pv.fNameCol : pv.fNameSize;
     pv.lNameSize = pv.lNameSize < pv.lNameCol ? pv.lNameCol : pv.lNameSize;
     pv.addressSize = pv.addressSize < pv.addressCol ? pv.addressCol : pv.addressSize;
     pv.indexNumberSize = pv.indexNumberSize < pv.indexNumberCol ? pv.indexNumberCol : pv.indexNumberSize;
+    pv.earningsSize = pv.earningsSize < pv.earningsCol ? pv.earningsCol : pv.earningsSize;
     pv.peselSize = pv.peselSize < pv.peselCol ? pv.peselCol : pv.peselSize;
     pv.fNameSize += 2;
     pv.lNameSize += 2;
     pv.addressSize += 2;
     pv.indexNumberSize += 2;
+    pv.earningsSize += 2;
     pv.peselSize += 2;
     printHeader(pv);
-    for (const Student& student : db_) {
-        printRow(pv, student);
+    for (const std::shared_ptr<Person>& person : db_) {
+        printRow(pv, person);
     }
     printDashes(pv);
 }
@@ -137,6 +158,11 @@ void Database::printHeader(const printingValues& pv) const {
     std::wcout << L"| ";
     std::wcout << L"Numer indeksu";
     for (unsigned i = 0; i < pv.indexNumberSize - pv.indexNumberCol - 1; i++) {
+        std::wcout << L" ";
+    }
+    std::wcout << L"| ";
+    std::wcout << L"Zarobki";
+    for (unsigned i = 0; i < pv.earningsSize - pv.earningsCol - 1; i++) {
         std::wcout << L" ";
     }
     std::wcout << L"| ";
@@ -171,6 +197,10 @@ void Database::printDashes(const printingValues& pv) const {
         std::wcout << L"-";
     }
     std::wcout << L"+";
+    for (unsigned i = 0; i < pv.earningsSize; i++) {
+        std::wcout << L"-";
+    }
+    std::wcout << L"+";
     for (unsigned i = 0; i < pv.peselSize; i++) {
         std::wcout << L"-";
     }
@@ -181,34 +211,39 @@ void Database::printDashes(const printingValues& pv) const {
     std::wcout << L"+\n";
 }
 
-void Database::printRow(const printingValues& pv, const Student& s) const {
+void Database::printRow(const printingValues& pv, const std::shared_ptr<Person>& p) const {
     std::wcout << L"| ";
-    std::wcout << s.getFirstName();
-    for (unsigned i = 0; i < pv.fNameSize - s.getFirstName().size() - 1; i++) {
+    std::wcout << p->getFirstName();
+    for (unsigned i = 0; i < pv.fNameSize - p->getFirstName().size() - 1; i++) {
         std::wcout << L" ";
     }
     std::wcout << L"| ";
-    std::wcout << s.getLastName();
-    for (unsigned i = 0; i < pv.lNameSize - s.getLastName().size() - 1; i++) {
+    std::wcout << p->getLastName();
+    for (unsigned i = 0; i < pv.lNameSize - p->getLastName().size() - 1; i++) {
         std::wcout << L" ";
     }
     std::wcout << L"| ";
-    std::wcout << s.getAddress();
-    for (unsigned i = 0; i < pv.addressSize - s.getAddress().size() - 1; i++) {
+    std::wcout << p->getAddress();
+    for (unsigned i = 0; i < pv.addressSize - p->getAddress().size() - 1; i++) {
         std::wcout << L" ";
     }
     std::wcout << L"| ";
-    std::wcout << s.getIndexNumber();
-    for (unsigned i = 0; i < pv.indexNumberSize - std::to_wstring(s.getIndexNumber()).size() - 1; i++) {
+    std::wcout << p->getIndexNumber();
+    for (unsigned i = 0; i < pv.indexNumberSize - p->getIndexNumber().size() - 1; i++) {
         std::wcout << L" ";
     }
     std::wcout << L"| ";
-    std::wcout << s.getPesel();
-    for (unsigned i = 0; i < pv.peselSize - std::to_wstring(s.getPesel()).size() - 1; i++) {
+    std::wcout << p->getEarnings();
+    for (unsigned i = 0; i < pv.earningsSize - p->getEarnings().size() - 1; i++) {
         std::wcout << L" ";
     }
     std::wcout << L"| ";
-    std::wstring sex = s.getSex() == Sex::Woman ? L"kobieta" : L"mężczyzna";
+    std::wcout << p->getPesel();
+    for (unsigned i = 0; i < pv.peselSize - p->getPesel().size() - 1; i++) {
+        std::wcout << L" ";
+    }
+    std::wcout << L"| ";
+    std::wstring sex = p->getSex() == Sex::Woman ? L"kobieta" : L"mężczyzna";
     std::wcout << sex;
     for (unsigned i = 0; i < pv.sexSize - sex.size() - 1; i++) {
         std::wcout << L" ";
@@ -217,9 +252,9 @@ void Database::printRow(const printingValues& pv, const Student& s) const {
 }
 
 Database Database::findByLastName(const std::wstring& lastName) const {
-    std::vector<Student> result;
-    std::for_each(db_.cbegin(), db_.cend(), [&result, lastName](const auto& elem) {
-        if (elem.getLastName() == lastName) {
+    std::vector<std::shared_ptr<Person>> result;
+    std::for_each(db_.cbegin(), db_.cend(), [&result, &lastName](const auto& elem) {
+        if (elem->getLastName() == lastName) {
             result.push_back(elem);
         }
     });
@@ -227,9 +262,9 @@ Database Database::findByLastName(const std::wstring& lastName) const {
 }
 
 Database Database::findByPesel(unsigned long pesel) const {
-    std::vector<Student> result;
+    std::vector<std::shared_ptr<Person>> result;
     std::for_each(db_.cbegin(), db_.cend(), [&result, pesel](const auto& elem) {
-        if (elem.getPesel() == pesel) {
+        if (elem->getPesel() == std::to_wstring(pesel)) {
             result.push_back(elem);
         }
     });
@@ -238,7 +273,7 @@ Database Database::findByPesel(unsigned long pesel) const {
 
 Database& Database::sortByLastName() {
     std::sort(db_.begin(), db_.end(), [](const auto& elem1, const auto& elem2) {
-        return elem1.getLastName() < elem2.getLastName();
+        return elem1->getLastName() < elem2->getLastName();
     });
     return *this;
 }
@@ -246,7 +281,7 @@ Database& Database::sortByLastName() {
 
 Database& Database::sortByPesel() {
     std::sort(db_.begin(), db_.end(), [](const auto& elem1, const auto& elem2) {
-        return elem1.getPesel() < elem2.getPesel();
+        return std::stoul(elem1->getPesel()) < std::stoul(elem2->getPesel());
     });
     return *this;
 }
@@ -315,12 +350,14 @@ void Database::writeFile(std::filesystem::path file) const {
     Json::Value root;
     std::for_each(db_.cbegin(), db_.cend(), [&root, &converter](const auto& elem) {
         Json::Value databaseEntry;
-        databaseEntry["firstName"] = Json::Value(converter.to_bytes(elem.getFirstName()));
-        databaseEntry["lastName"] = Json::Value(converter.to_bytes(elem.getLastName()));
-        databaseEntry["address"] = Json::Value(converter.to_bytes(elem.getAddress()));
-        databaseEntry["indexNumber"] = Json::Value(elem.getIndexNumber());
-        databaseEntry["pesel"] = Json::Value(elem.getPesel());
-        databaseEntry["sex"] = Json::Value(elem.getSex() == Sex::Woman ? "w" : "m");
+        databaseEntry["firstName"] = Json::Value(converter.to_bytes(elem->getFirstName()));
+        databaseEntry["lastName"] = Json::Value(converter.to_bytes(elem->getLastName()));
+        databaseEntry["address"] = Json::Value(converter.to_bytes(elem->getAddress()));;
+        databaseEntry["indexNumber"] = elem->getIndexNumber() != L"" ? Json::Value(std::stoul(elem->getIndexNumber())) : Json::Value(0);
+        databaseEntry["earnings"] = elem->getEarnings() != L"" ? Json::Value(std::stod(elem->getEarnings())) : Json::Value(0.0);
+        databaseEntry["pesel"] = Json::Value(std::stoul(elem->getPesel()));
+        databaseEntry["sex"] = Json::Value(elem->getSex() == Sex::Woman ? "w" : "m");
+        databaseEntry["isStudent"] = Json::Value(elem->getIndexNumber() != L"" ? "y" : "n");
         root.append(databaseEntry);
     });
     std::ofstream outfile(file);
@@ -329,7 +366,7 @@ void Database::writeFile(std::filesystem::path file) const {
 }
 
 bool Database::restoreFromFile(std::filesystem::path file) {
-    if (studentsCount() > 0) {
+    if (personsCount() > 0) {
         return false;
     }
     if (file.string()[0] != '/') {
@@ -377,12 +414,21 @@ bool Database::restoreFromFile(std::filesystem::path file) {
         infile >> root;
         infile.close();
         for (unsigned i = 0; i < root.size(); i++) {
-            db_.push_back(Student(converter.from_bytes(root[i]["firstName"].asString()),
-                                  converter.from_bytes(root[i]["lastName"].asString()),
-                                  converter.from_bytes(root[i]["address"].asString()),
-                                  root[i]["indexNumber"].asUInt64(),
-                                  root[i]["pesel"].asUInt64(),
-                                  root[i]["sex"].asString() == "w" ? Sex::Woman : Sex::Man));
+            if (root[i]["isStudent"].asString() == "y") {
+                db_.push_back(std::make_shared<Student>(converter.from_bytes(root[i]["firstName"].asString()),
+                                                        converter.from_bytes(root[i]["lastName"].asString()),
+                                                        converter.from_bytes(root[i]["address"].asString()),
+                                                        root[i]["indexNumber"].asUInt64(),
+                                                        root[i]["pesel"].asUInt64(),
+                                                        root[i]["sex"].asString() == "w" ? Sex::Woman : Sex::Man));
+            } else {
+                db_.push_back(std::make_shared<Worker>(converter.from_bytes(root[i]["firstName"].asString()),
+                                                       converter.from_bytes(root[i]["lastName"].asString()),
+                                                       converter.from_bytes(root[i]["address"].asString()),
+                                                       root[i]["earnings"].asDouble(),
+                                                       root[i]["pesel"].asUInt64(),
+                                                       root[i]["sex"].asString() == "w" ? Sex::Woman : Sex::Man));
+            }
         }
         return true;
     } else {

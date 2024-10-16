@@ -6,33 +6,13 @@ Student::Student(const std::wstring& firstName,
                  unsigned long indexNumber,
                  unsigned long pesel,
                  Sex sex)
-                : firstName_(firstName)
-                , lastName_(lastName)
-                , address_(address)
-                , indexNumber_(indexNumber)
-                , pesel_(pesel)
-                , sex_(sex) {}
+                : Person(firstName, lastName, address, pesel, sex)
+                , indexNumber_(indexNumber) {}
 
-std::wstring Student::getFirstName() const {
-    return firstName_;
+std::wstring Student::getIndexNumber() const {
+    return std::to_wstring(indexNumber_);
 }
 
-std::wstring Student::getLastName() const {
-    return lastName_;
-}
-
-std::wstring Student::getAddress() const {
-    return address_;
-}
-
-unsigned long Student::getIndexNumber() const {
-    return indexNumber_;
-}
-
-unsigned long Student::getPesel() const {
-    return pesel_;
-}
-
-Sex Student::getSex() const {
-    return sex_;
+std::wstring Student::getEarnings() const {
+    return L"";
 }
