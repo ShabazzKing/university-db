@@ -173,6 +173,10 @@ void modifyEarnings(Database& database){
     std::wcout << L"PESEL: ";
     std::wcin >> pesel;
     std::shared_ptr<Person> person = database.getByPesel(pesel);
+    if (person == nullptr) {
+        std::wcout << L"Nie znaleziono osoby o podanym numerze PESEL.\n";
+        return;
+    }
     if (person->getEarnings() == L"") {
         std::wcout << L"To jest student, nie ma zarobków.\n";
         return;
