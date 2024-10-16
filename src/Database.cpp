@@ -415,19 +415,19 @@ bool Database::restoreFromFile(std::filesystem::path file) {
         infile.close();
         for (unsigned i = 0; i < root.size(); i++) {
             if (root[i]["isStudent"].asString() == "y") {
-                db_.push_back(std::make_shared<Student>(converter.from_bytes(root[i]["firstName"].asString()),
-                                                        converter.from_bytes(root[i]["lastName"].asString()),
-                                                        converter.from_bytes(root[i]["address"].asString()),
-                                                        root[i]["indexNumber"].asUInt64(),
-                                                        root[i]["pesel"].asUInt64(),
-                                                        root[i]["sex"].asString() == "w" ? Sex::Woman : Sex::Man));
+                addStudent(Student(converter.from_bytes(root[i]["firstName"].asString()),
+                                   converter.from_bytes(root[i]["lastName"].asString()),
+                                   converter.from_bytes(root[i]["address"].asString()),
+                                   root[i]["indexNumber"].asUInt64(),
+                                   root[i]["pesel"].asUInt64(),
+                                   root[i]["sex"].asString() == "w" ? Sex::Woman : Sex::Man));
             } else {
-                db_.push_back(std::make_shared<Worker>(converter.from_bytes(root[i]["firstName"].asString()),
-                                                       converter.from_bytes(root[i]["lastName"].asString()),
-                                                       converter.from_bytes(root[i]["address"].asString()),
-                                                       root[i]["earnings"].asDouble(),
-                                                       root[i]["pesel"].asUInt64(),
-                                                       root[i]["sex"].asString() == "w" ? Sex::Woman : Sex::Man));
+                addWorker(Worker(converter.from_bytes(root[i]["firstName"].asString()),
+                                 converter.from_bytes(root[i]["lastName"].asString()),
+                                 converter.from_bytes(root[i]["address"].asString()),
+                                 root[i]["earnings"].asDouble(),
+                                 root[i]["pesel"].asUInt64(),
+                                 root[i]["sex"].asString() == "w" ? Sex::Woman : Sex::Man));
             }
         }
         return true;
