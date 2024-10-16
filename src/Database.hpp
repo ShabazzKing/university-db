@@ -47,6 +47,7 @@ public:
     Database findByPesel(unsigned long pesel) const;
     Database& sortByLastName();
     Database& sortByPesel();
+    std::shared_ptr<Person> getByPesel(unsigned long pesel);
     bool storeInFile(std::filesystem::path file) const;
     bool restoreFromFile(std::filesystem::path file);
 };

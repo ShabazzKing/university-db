@@ -27,6 +27,7 @@ public:
     std::wstring getAddress() const;
     virtual std::wstring getIndexNumber() const = 0;
     virtual std::wstring getEarnings() const = 0;
+    virtual void setEarnings(double) = 0;
     std::wstring getPesel() const;
     Sex getSex() const;
 };

@@ -14,4 +14,5 @@ public:
             Sex sex);
     std::wstring getIndexNumber() const override;
     std::wstring getEarnings() const override;
+    void setEarnings(double) override {};
 };

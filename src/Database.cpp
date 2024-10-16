@@ -286,6 +286,15 @@ Database& Database::sortByPesel() {
     return *this;
 }
 
+std::shared_ptr<Person> Database::getByPesel(unsigned long pesel) {
+    for (const auto& elem : db_) {
+        if (elem->getPesel() == std::to_wstring(pesel)) {
+            return elem;
+        }
+    }
+    return nullptr;
+}
+
 bool Database::storeInFile(std::filesystem::path file) const {
     if (file.string()[0] != '/') {
         std::filesystem::path leadingDot(".");

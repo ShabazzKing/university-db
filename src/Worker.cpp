@@ -16,3 +16,7 @@ std::wstring Worker::getIndexNumber() const {
 std::wstring Worker::getEarnings() const {
     return std::to_wstring(earnings_);
 }
+
+void Worker::setEarnings(double e) {
+    earnings_ = e;
+}

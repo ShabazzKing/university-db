@@ -11,6 +11,7 @@ void removeStudent(Database& database);
 void removePerson(Database& database);
 void searchByLastName(const Database& database);
 void searchByPesel(const Database& database);
+void modifyEarnings(Database& database);
 void writeToFile(const Database& database);
 void readFromFile(Database& database);
 
@@ -28,9 +29,10 @@ int main() {
         std::wcout << L"    7 Sortuj po numerze PESEL i wyświetl bazę danych\n";
         std::wcout << L"    8 Wyszukaj osoby po nazwisku i wyświetl\n";
         std::wcout << L"    9 Wyszukaj osobę po numerze PESEL i wyświetl\n";
-        std::wcout << L"    10 Zapisz bazę do pliku\n";
-        std::wcout << L"    11 Załaduj bazę z pliku\n";
-        std::wcout << L"    12 Zakończ program\n";
+        std::wcout << L"    10 Wyszukaj osobę po numerze PESEL i modyfikuj zarobki\n";
+        std::wcout << L"    11 Zapisz bazę do pliku\n";
+        std::wcout << L"    12 Załaduj bazę z pliku\n";
+        std::wcout << L"    13 Zakończ program\n";
         unsigned answer;
         std::wcin >> answer;
         switch (answer) {
@@ -62,12 +64,15 @@ int main() {
                 searchByPesel(database);
                 break;
             case 10:
-                writeToFile(database);
+                modifyEarnings(database);
                 break;
             case 11:
-                readFromFile(database);
+                writeToFile(database);
                 break;
             case 12:
+                readFromFile(database);
+                break;
+            case 13:
                 return 0;
             default:
                 std::wcout << L"Nieprawidłowa opcja\n";
@@ -162,6 +167,22 @@ void searchByPesel(const Database& database) {
     std::wcin >> pesel;
     database.findByPesel(pesel).printDatabase();
 }
+
+void modifyEarnings(Database& database){
+    unsigned long pesel;
+    std::wcout << L"PESEL: ";
+    std::wcin >> pesel;
+    std::shared_ptr<Person> person = database.getByPesel(pesel);
+    if (person->getEarnings() == L"") {
+        std::wcout << L"To jest student, nie ma zarobków.\n";
+        return;
+    }
+    double earnings;
+    std::wcout << L"Nowe zarobki: ";
+    std::wcin >> earnings;
+    person->setEarnings(earnings);
+}
+
 
 void writeToFile(const Database& database) {
     std::wcout << L"Podaj ścieżkę do pliku (nazwę): ";
