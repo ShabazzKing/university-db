@@ -286,6 +286,15 @@ Database& Database::sortByPesel() {
     return *this;
 }
 
+Database& Database::sortByEarnings() {
+    std::sort(db_.begin(), db_.end(), [](const auto& elem1, const auto& elem2) {
+        std::wstring e1 = elem1->getEarnings();
+        std::wstring e2 = elem2->getEarnings();
+        return std::stod(e1 != L"" ? e1 : L"-1.0") < std::stod(e2 != L"" ? e2 : L"-1.0");
+    });
+    return *this;
+}
+
 std::shared_ptr<Person> Database::getByPesel(unsigned long pesel) {
     for (const auto& elem : db_) {
         if (elem->getPesel() == std::to_wstring(pesel)) {

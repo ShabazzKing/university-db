@@ -27,12 +27,13 @@ int main() {
         std::wcout << L"    5 Usuń osobę po numerze PESEL\n";
         std::wcout << L"    6 Sortuj po nazwisku i wyświetl bazę danych\n";
         std::wcout << L"    7 Sortuj po numerze PESEL i wyświetl bazę danych\n";
-        std::wcout << L"    8 Wyszukaj osoby po nazwisku i wyświetl\n";
-        std::wcout << L"    9 Wyszukaj osobę po numerze PESEL i wyświetl\n";
-        std::wcout << L"    10 Wyszukaj osobę po numerze PESEL i modyfikuj zarobki\n";
-        std::wcout << L"    11 Zapisz bazę do pliku\n";
-        std::wcout << L"    12 Załaduj bazę z pliku\n";
-        std::wcout << L"    13 Zakończ program\n";
+        std::wcout << L"    8 Sortuj po zarobkach i wyświetl bazę danych\n";
+        std::wcout << L"    9 Wyszukaj osoby po nazwisku i wyświetl\n";
+        std::wcout << L"    10 Wyszukaj osobę po numerze PESEL i wyświetl\n";
+        std::wcout << L"    11 Wyszukaj osobę po numerze PESEL i modyfikuj zarobki\n";
+        std::wcout << L"    12 Zapisz bazę do pliku\n";
+        std::wcout << L"    13 Załaduj bazę z pliku\n";
+        std::wcout << L"    14 Zakończ program\n";
         unsigned answer;
         std::wcin >> answer;
         switch (answer) {
@@ -58,21 +59,24 @@ int main() {
                 database.sortByPesel().printDatabase();
                 break;
             case 8:
-                searchByLastName(database);
+                database.sortByEarnings().printDatabase();
                 break;
             case 9:
-                searchByPesel(database);
+                searchByLastName(database);
                 break;
             case 10:
-                modifyEarnings(database);
+                searchByPesel(database);
                 break;
             case 11:
-                writeToFile(database);
+                modifyEarnings(database);
                 break;
             case 12:
-                readFromFile(database);
+                writeToFile(database);
                 break;
             case 13:
+                readFromFile(database);
+                break;
+            case 14:
                 return 0;
             default:
                 std::wcout << L"Nieprawidłowa opcja\n";
